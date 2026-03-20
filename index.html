@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comidas rápidas</title>
+</head>
+<body>
+
+<h1>🍔 Menú</h1>
+
+<div id="productos"></div>
+
+<h2>Agregar producto</h2>
+<input id="nombre" placeholder="Nombre"><br>
+<input id="precio" placeholder="Precio"><br>
+<input id="desc" placeholder="Descripción"><br>
+<button onclick="agregar()">Agregar</button>
+
+<h2>🛒 Carrito</h2>
+<div id="carrito"></div>
+<p id="total"></p>
+<button onclick="whatsapp()">Pedir por WhatsApp</button>
+
+<script>
+let productos = JSON.parse(localStorage.getItem("productos")) || [];
+let carrito = [];
+
+function mostrar() {
+  let html = "";
+  productos.forEach((p, i) => {
+    html += `<div>
+      <b>${p.nombre}</b> - $${p.precio}<br>
+      ${p.desc}<br>
+      <button onclick="add(${i})">Agregar</button>
+    </div><hr>`;
+  });
+  document.getElementById("productos").innerHTML = html;
+}
+
+function agregar() {
+  let p = {
+    nombre: nombre.value,
+    precio: precio.value,
+    desc: desc.value
+  };
+  productos.push(p);
+  localStorage.setItem("productos", JSON.stringify(productos));
+  mostrar();
+}
+
+function add(i) {
+  carrito.push(productos[i]);
+  actualizar();
+}
+
+function actualizar() {
+  let html = "";
+  let total = 0;
+  carrito.forEach(p => {
+    html += `${p.nombre} - $${p.precio}<br>`;
+    total += Number(p.precio);
+  });
+  document.getElementById("carrito").innerHTML = html;
+  document.getElementById("total").innerText = "Total: $" + total;
+}
+
+function whatsapp() {
+  let msg = carrito.map(p => p.nombre + " $" + p.precio).join("%0A");
+  window.open("https://wa.me/573232226289?text=Pedido:%0A" + msg);
+}
+
+mostrar();
+</script>
+
+</body>
+</html>
