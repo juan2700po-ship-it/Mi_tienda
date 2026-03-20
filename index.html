@@ -1,111 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Comidas Pro</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: #111;
-      color: white;
-    }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comidas</title>
 
-    .inicio {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(45deg, #ff9800, #ff5722);
-    }
+<style>
+body { margin:0; font-family:Arial; background:#111; color:white; }
 
-    .inicio h1 {
-      font-size: 30px;
-    }
+header {
+  background:#d32f2f;
+  padding:15px;
+  text-align:center;
+  font-size:20px;
+}
 
-    .inicio button {
-      padding: 15px;
-      font-size: 18px;
-      border: none;
-      border-radius: 10px;
-      background: black;
-      color: white;
-    }
+.card {
+  background:#222;
+  margin:10px;
+  padding:15px;
+  border-radius:10px;
+}
 
-    .app {
-      display: none;
-      padding: 10px;
-    }
+button {
+  background:#ff9800;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  width:100%;
+}
 
-    .card {
-      background: #222;
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 10px;
-    }
+.admin {
+  display:none;
+  padding:10px;
+  background:#000;
+}
 
-    button {
-      background: #ff9800;
-      border: none;
-      padding: 10px;
-      margin: 3px;
-      border-radius: 8px;
-    }
-
-    input {
-      padding: 8px;
-      margin: 3px;
-      border-radius: 5px;
-      border: none;
-    }
-
-    .carrito {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background: #000;
-      padding: 10px;
-    }
-  </style>
+input {
+  padding:8px;
+  margin:5px;
+}
+</style>
 </head>
+
 <body>
 
-<!-- PANTALLA INICIO -->
-<div class="inicio" id="inicio">
-  <h1>🍔 Bienvenido</h1>
-  <p>Comidas Rápidas</p>
-  <button onclick="entrar()">Entrar</button>
-</div>
+<header onclick="activarAdmin()">🍔 Comidas Rápidas</header>
 
-<!-- APP -->
-<div class="app" id="app">
-
-<h2>Menú</h2>
 <div id="productos"></div>
 
-<h3>Agregar / Editar</h3>
-<input id="nombre" placeholder="Nombre">
-<input id="precio" placeholder="Precio">
-<input id="desc" placeholder="Descripción">
-<button onclick="agregar()">Guardar</button>
-
-<div class="carrito">
-  <p id="total">Total: $0</p>
-  <button onclick="whatsapp()">Pedir por WhatsApp</button>
-</div>
-
+<div class="admin" id="admin">
+  <h3>Modo Admin</h3>
+  <input id="nombre" placeholder="Nombre">
+  <input id="precio" placeholder="Precio">
+  <input id="desc" placeholder="Descripción">
+  <button onclick="guardar()">Guardar producto</button>
 </div>
 
 <script>
-let productos = JSON.parse(localStorage.getItem("productos")) || [];
-let carrito = [];
-let editando = null;
+let productos = JSON.parse(localStorage.getItem("productos")) || [
+  {nombre:"Hamburguesa", precio:15000, desc:"Carne y queso"},
+  {nombre:"Salchipapas", precio:12000, desc:"Papas y salchicha"}
+];
 
-function entrar(){
-  document.getElementById("inicio").style.display="none";
-  document.getElementById("app").style.display="block";
-  mostrar();
+let adminActivo = false;
+
+function activarAdmin(){
+  let clave = prompt("Clave admin:");
+  if(clave === "1234"){
+    adminActivo = true;
+    document.getElementById("admin").style.display="block";
+    mostrar();
+  }
 }
 
 function mostrar(){
@@ -115,43 +80,23 @@ function mostrar(){
     <div class="card">
       <h3>${p.nombre}</h3>
       <p>${p.desc}</p>
-      <b>$${p.precio}</b><br>
-      <button onclick="add(${i})">Agregar</button>
-      <button onclick="editar(${i})">Editar</button>
-      <button onclick="eliminar(${i})">Eliminar</button>
+      <b>$${p.precio}</b><br><br>
+      <button onclick="pedir('${p.nombre}')">Pedir</button>
+      ${adminActivo ? `<button onclick="eliminar(${i})">Eliminar</button>` : ``}
     </div>`;
   });
   document.getElementById("productos").innerHTML=html;
 }
 
-function agregar(){
+function guardar(){
   let p={
     nombre:nombre.value,
-    precio:Number(precio.value),
+    precio:precio.value,
     desc:desc.value
   };
-
-  if(editando!==null){
-    productos[editando]=p;
-    editando=null;
-  } else {
-    productos.push(p);
-  }
-
+  productos.push(p);
   localStorage.setItem("productos",JSON.stringify(productos));
   mostrar();
-
-  nombre.value="";
-  precio.value="";
-  desc.value="";
-}
-
-function editar(i){
-  let p=productos[i];
-  nombre.value=p.nombre;
-  precio.value=p.precio;
-  desc.value=p.desc;
-  editando=i;
 }
 
 function eliminar(i){
@@ -160,22 +105,12 @@ function eliminar(i){
   mostrar();
 }
 
-function add(i){
-  carrito.push(productos[i]);
-  actualizar();
+function pedir(nombre){
+  window.open("https://wa.me/573232226289?text=Quiero pedir: "+nombre);
 }
 
-function actualizar(){
-  let total=0;
-  carrito.forEach(p=> total+=p.precio);
-  document.getElementById("total").innerText="Total: $"+total;
-}
-
-function whatsapp(){
-  let msg=carrito.map(p=>p.nombre+" $"+p.precio).join("%0A");
-  window.open("https://wa.me/573232226289?text=Pedido:%0A"+msg);
-}
+mostrar();
 </script>
 
 </body>
-  </html>
+</html>
