@@ -1,90 +1,163 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Comidas Rápidas</title>
+  <title>Comidas Pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       font-family: Arial;
-      background: #f5f5f5;
-    }
-    header {
-      background: #d32f2f;
+      background: #111;
       color: white;
-      padding: 15px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: bold;
     }
-    .container {
+
+    .inicio {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(45deg, #ff9800, #ff5722);
+    }
+
+    .inicio h1 {
+      font-size: 30px;
+    }
+
+    .inicio button {
+      padding: 15px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      background: black;
+      color: white;
+    }
+
+    .app {
+      display: none;
       padding: 10px;
     }
+
     .card {
-      background: white;
-      border-radius: 15px;
+      background: #222;
+      margin: 10px 0;
       padding: 15px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      border-radius: 10px;
     }
-    .card h3 {
-      margin: 0;
-    }
-    .precio {
-      color: #d32f2f;
-      font-weight: bold;
-      margin: 5px 0;
-    }
+
     button {
       background: #ff9800;
       border: none;
       padding: 10px;
+      margin: 3px;
       border-radius: 8px;
-      width: 100%;
-      font-weight: bold;
     }
+
+    input {
+      padding: 8px;
+      margin: 3px;
+      border-radius: 5px;
+      border: none;
+    }
+
     .carrito {
       position: fixed;
       bottom: 0;
       width: 100%;
-      background: white;
+      background: #000;
       padding: 10px;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
 
-<header>🍔 Comidas Rápidas</header>
+<!-- PANTALLA INICIO -->
+<div class="inicio" id="inicio">
+  <h1>🍔 Bienvenido</h1>
+  <p>Comidas Rápidas</p>
+  <button onclick="entrar()">Entrar</button>
+</div>
 
-<div class="container" id="productos"></div>
+<!-- APP -->
+<div class="app" id="app">
+
+<h2>Menú</h2>
+<div id="productos"></div>
+
+<h3>Agregar / Editar</h3>
+<input id="nombre" placeholder="Nombre">
+<input id="precio" placeholder="Precio">
+<input id="desc" placeholder="Descripción">
+<button onclick="agregar()">Guardar</button>
 
 <div class="carrito">
-  <div id="total">Total: $0</div>
+  <p id="total">Total: $0</p>
   <button onclick="whatsapp()">Pedir por WhatsApp</button>
 </div>
 
+</div>
+
 <script>
-let productos = [
-  {nombre:"Hamburguesa", precio:15000, desc:"Carne, queso, lechuga"},
-  {nombre:"Salchipapas", precio:12000, desc:"Papas + salchicha"},
-  {nombre:"Perro caliente", precio:10000, desc:"Pan, salchicha, salsas"}
-];
-
+let productos = JSON.parse(localStorage.getItem("productos")) || [];
 let carrito = [];
+let editando = null;
 
-function mostrar() {
-  let html = "";
+function entrar(){
+  document.getElementById("inicio").style.display="none";
+  document.getElementById("app").style.display="block";
+  mostrar();
+}
+
+function mostrar(){
+  let html="";
   productos.forEach((p,i)=>{
-    html += `
+    html+=`
     <div class="card">
       <h3>${p.nombre}</h3>
-      <div class="precio">$${p.precio}</div>
       <p>${p.desc}</p>
-      <button onclick="add(${i})">Agregar al carrito</button>
+      <b>$${p.precio}</b><br>
+      <button onclick="add(${i})">Agregar</button>
+      <button onclick="editar(${i})">Editar</button>
+      <button onclick="eliminar(${i})">Eliminar</button>
     </div>`;
   });
-  document.getElementById("productos").innerHTML = html;
+  document.getElementById("productos").innerHTML=html;
+}
+
+function agregar(){
+  let p={
+    nombre:nombre.value,
+    precio:Number(precio.value),
+    desc:desc.value
+  };
+
+  if(editando!==null){
+    productos[editando]=p;
+    editando=null;
+  } else {
+    productos.push(p);
+  }
+
+  localStorage.setItem("productos",JSON.stringify(productos));
+  mostrar();
+
+  nombre.value="";
+  precio.value="";
+  desc.value="";
+}
+
+function editar(i){
+  let p=productos[i];
+  nombre.value=p.nombre;
+  precio.value=p.precio;
+  desc.value=p.desc;
+  editando=i;
+}
+
+function eliminar(i){
+  productos.splice(i,1);
+  localStorage.setItem("productos",JSON.stringify(productos));
+  mostrar();
 }
 
 function add(i){
@@ -93,18 +166,16 @@ function add(i){
 }
 
 function actualizar(){
-  let total = 0;
-  carrito.forEach(p=> total += p.precio);
-  document.getElementById("total").innerText = "Total: $" + total;
+  let total=0;
+  carrito.forEach(p=> total+=p.precio);
+  document.getElementById("total").innerText="Total: $"+total;
 }
 
 function whatsapp(){
-  let msg = carrito.map(p=> p.nombre+" $"+p.precio).join("%0A");
+  let msg=carrito.map(p=>p.nombre+" $"+p.precio).join("%0A");
   window.open("https://wa.me/573232226289?text=Pedido:%0A"+msg);
 }
-
-mostrar();
 </script>
 
 </body>
-</html>
+  </html>
